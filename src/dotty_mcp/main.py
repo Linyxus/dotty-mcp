@@ -208,26 +208,27 @@ mcp = FastMCP("dotty-mcp")
 @mcp.tool()
 def scalac(file: str, options: List[str] = None) -> str:
     """
-    Compile a Scala file using the Dotty (Scala 3) compiler through SBT.
+    Compile a Scala file using the Dotty (Scala 3) compiler under development through SBT.
 
-    This tool provides direct access to the scalac compiler within an SBT session,
+    This tool provides direct access to the development scalac compiler within an SBT session,
     allowing you to compile individual Scala files with custom compiler options.
-    The SBT session is maintained across multiple invocations for efficiency.
 
     The -color:never option is automatically added to all compilations to ensure
     clean, parseable output without ANSI escape codes. You don't need to specify
     this option manually.
 
+    A small trick: you can pass empty arguments to this tool, i.e. `scalac("", [])`,
+    to check whether the development compiler compiles.
+
     Args:
         file: Relative path from project root to the Scala file to compile
               (e.g., "tests/pos/HelloWorld.scala")
         options: List of compiler options to pass to scalac
-                (e.g., ["-Xprint:typer", "-explain"])
+                (e.g., ["-Xprint:typer", "-Xprint:cc", "-Ycc-verbose"])
                 Note: -color:never is automatically prepended
 
     Returns:
         Compilation output including any errors, warnings, or success messages.
-        Output is guaranteed to be free of ANSI color codes.
 
     Example:
         scalac("tests/pos/Test.scala", ["-Xprint:typer"])
