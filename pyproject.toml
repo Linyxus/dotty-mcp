@@ -1,0 +1,40 @@
+[build-system]
+requires = ["setuptools>=45", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "dotty-mcp"
+version = "0.1.0"
+description = "MCP server for Scala 3 (Dotty) compiler development"
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [
+    { name = "Yichen Xu", email = "yichen.x@outlook.com" }
+]
+license = { text = "MIT" }
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Compilers",
+]
+keywords = ["scala", "dotty", "scala3", "mcp", "compiler"]
+dependencies = [
+    "ipython>=8.37.0",
+    "mcp[cli]>=1.2.0",
+    "pexpect>=4.9.0",
+]
+
+[project.scripts]
+dotty-mcp = "dotty_mcp.main:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.uv]
+package = true
