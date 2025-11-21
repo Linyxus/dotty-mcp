@@ -16,13 +16,21 @@ A Model Context Protocol (MCP) server for Scala 3 (Dotty) compiler development.
 
 ### For Claude Code
 
+**From a local clone:**
 ```bash
 cd /path/to/dotty-mcp
 uv sync
 claude mcp add dotty-mcp -- uv run --directory /path/to/dotty-mcp dotty-mcp --root /path/to/dotty-project
 ```
 
-Replace `/path/to/dotty-mcp` with the actual path to this repository and `/path/to/dotty-project` with your Dotty compiler repository path.
+**After publishing to PyPI:**
+```bash
+# If running from within your Dotty project directory
+claude mcp add dotty-mcp -- uvx dotty-mcp
+
+# Or specify a custom root
+claude mcp add dotty-mcp -- uvx dotty-mcp --root /path/to/dotty-project
+```
 
 ### Manual Installation
 
@@ -30,9 +38,14 @@ Replace `/path/to/dotty-mcp` with the actual path to this repository and `/path/
 # Install dependencies
 uv sync
 
-# Run the server
+# Run the server (from within Dotty project directory)
+uv run dotty-mcp
+
+# Or specify a custom root
 uv run dotty-mcp --root /path/to/dotty-project
 ```
+
+**Note:** The `--root` argument is optional and defaults to the current directory.
 
 ## Usage
 
