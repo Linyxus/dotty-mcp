@@ -46,7 +46,7 @@ class SBTProcess:
 
             # Wait for SBT prompt - now without ANSI color codes
             index = self.process.expect([
-                r'sbt:\w+>\s*',        # Standard prompt like "sbt:scala3> "
+                r'sbt:[\w-]+>\s*',     # Standard prompt like "sbt:scala3> " or "sbt:scala3-nonbootstrapped> "
                 r'>\s*$',              # Simple > prompt
                 pexpect.TIMEOUT,
                 pexpect.EOF
@@ -91,8 +91,7 @@ class SBTProcess:
             self.process.sendline(command)
 
             # Wait for the command to complete and return to prompt
-            # No ANSI codes since we started with -no-colors
-            self.process.expect(r'sbt:\w+>\s*', timeout=timeout)
+            self.process.expect(r'sbt:[\w-]+>\s*', timeout=timeout)
 
             # Get the output (everything before the next prompt)
             output = self.process.before
