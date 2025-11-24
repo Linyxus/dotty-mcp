@@ -191,6 +191,41 @@ class DottyProject:
         except Exception as e:
             return f"Unexpected error: {e}"
 
+    def testCompilation(self, pattern: str) -> str:
+        """
+        Run the compilation test suite with an optional filter pattern.
+
+        Args:
+            pattern: A substring to filter tests by path. If empty, runs all tests.
+
+        Returns:
+            Test output as a string
+        """
+        try:
+            self.ensure_sbt_running()
+
+            # Construct the testCompilation command
+            if pattern:
+                command = f"testCompilation {pattern}"
+            else:
+                command = "testCompilation"
+
+            # Execute the command
+            output, exit_code = self.sbt_process.execute_command(command)
+
+            # Format the output
+            if exit_code == 0:
+                return f"Test compilation succeeded\n\n{output}" if output else "Test compilation succeeded"
+            else:
+                return f"Test compilation failed\n\n{output}"
+
+        except ValueError as e:
+            return f"Error: {e}"
+        except RuntimeError as e:
+            return f"Error: {e}"
+        except Exception as e:
+            return f"Unexpected error: {e}"
+
     def close(self):
         """Close the SBT process."""
         if self.sbt_process:
@@ -240,6 +275,32 @@ def scalac(file: str, options: List[str] = None) -> str:
         options = []
 
     return PROJECT.scalac(file, options)
+
+
+@mcp.tool()
+def testCompilation(pattern: str = "") -> str:
+    """
+    Run the compilation test suite of the development compiler.
+
+    This tool runs the Dotty compiler's compilation test suite, which tests
+    the compiler against a collection of Scala source files.
+
+    Args:
+        pattern: A simple substring (not a regex) to filter tests. All compilation
+                 tests whose path contains this substring will be run.
+                 When empty, runs all compilation tests.
+
+    Returns:
+        Test output including pass/fail status and any error messages.
+
+    Example:
+        testCompilation("pos/i1234")  # Run tests with "pos/i1234" in their path
+        testCompilation("")           # Run all compilation tests
+    """
+    if PROJECT is None:
+        return "Error: No Dotty project root specified. Use --root argument."
+
+    return PROJECT.testCompilation(pattern)
 
 
 def main():
