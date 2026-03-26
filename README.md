@@ -3,7 +3,7 @@
 A Model Context Protocol (MCP) server for developping [the Scala 3 compiler](https://github.com/scala/scala3).
 
 It provides one single tool:
-- `scalac(file, options)` which compiles a test file with the development compiler, and returns the outputs.
+- `scalac(files, options)` which compiles one or more test files with the development compiler, and returns the outputs.
 
 
 ## Installation

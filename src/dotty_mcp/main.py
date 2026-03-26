@@ -4,7 +4,7 @@ dotty-mcp MCP Server - A Scala 3 (Dotty) compiler wrapper MCP server
 
 import argparse
 import atexit
-import re
+import shlex
 from pathlib import Path
 from typing import List, Optional
 
@@ -147,12 +147,12 @@ class DottyProject:
         if self.sbt_process is None:
             self.sbt_process = SBTProcess(self.root)
 
-    def scalac(self, file: str, options: List[str]) -> str:
+    def scalac(self, files: List[str], options: List[str]) -> str:
         """
-        Compile a Scala file using the Dotty compiler through SBT.
+        Compile one or more Scala files using the Dotty compiler through SBT.
 
         Args:
-            file: The file path to compile (relative to project root)
+            files: The file paths to compile (relative to project root)
             options: List of compiler options to pass to scalac
 
         Returns:
@@ -165,23 +165,32 @@ class DottyProject:
         try:
             self.ensure_sbt_running()
 
+            source_files = [file for file in files if file]
+
             # Always add -color:never for clean output without ANSI codes
             all_options = ['-color:never'] + (options if options else [])
 
             # Construct the scalac command
-            options_str = ' '.join(all_options)
-            command = f"scalac {file} {options_str}"
+            command = shlex.join(["scalac", *source_files, *all_options])
 
             # Execute the command
             output, exit_code = self.sbt_process.execute_command(command)
 
+            sources_description = ", ".join(source_files)
+
             # Format the output
             if exit_code == 0 and not output:
-                return f"Successfully compiled {file}"
+                if source_files:
+                    return f"Successfully compiled {sources_description}"
+                return "Successfully ran scalac"
             elif exit_code == 0 and output:
-                return f"Successfully compiled {file}\n\nOutput:\n{output}"
+                if source_files:
+                    return f"Successfully compiled {sources_description}\n\nOutput:\n{output}"
+                return f"Successfully ran scalac\n\nOutput:\n{output}"
             else:
-                return f"Compilation failed for {file}\n\n{output}"
+                if source_files:
+                    return f"Compilation failed for {sources_description}\n\n{output}"
+                return f"scalac failed\n\n{output}"
 
         except ValueError as e:
             return f"Error: {e}"
@@ -240,23 +249,23 @@ mcp = FastMCP("dotty-mcp")
 
 
 @mcp.tool()
-def scalac(file: str, options: List[str] = None) -> str:
+def scalac(files: List[str], options: List[str] = None) -> str:
     """
-    Compile a Scala file using the Dotty (Scala 3) compiler under development through SBT.
+    Compile one or more Scala files using the Dotty (Scala 3) compiler under development through SBT.
 
     This tool provides direct access to the development scalac compiler within an SBT session,
-    allowing you to compile individual Scala files with custom compiler options.
+    allowing you to compile Scala source files with custom compiler options.
 
     The -color:never option is automatically added to all compilations to ensure
     clean, parseable output without ANSI escape codes. You don't need to specify
     this option manually.
 
-    A small trick: you can pass empty arguments to this tool, i.e. `scalac("", [])`,
+    A small trick: you can pass no source files to this tool, i.e. `scalac([], [])`,
     to check whether the development compiler compiles.
 
     Args:
-        file: Relative path from project root to the Scala file to compile
-              (e.g., "tests/pos/HelloWorld.scala")
+        files: Relative paths from project root to the Scala files to compile
+               (e.g., ["tests/pos/HelloWorld.scala", "tests/pos/Foo.scala"])
         options: List of compiler options to pass to scalac
                 (e.g., ["-Xprint:typer", "-Xprint:cc", "-Ycc-verbose"])
                 Note: -color:never is automatically prepended
@@ -265,7 +274,7 @@ def scalac(file: str, options: List[str] = None) -> str:
         Compilation output including any errors, warnings, or success messages.
 
     Example:
-        scalac("tests/pos/Test.scala", ["-Xprint:typer"])
+        scalac(["tests/pos/Test.scala", "tests/pos/OtherTest.scala"], ["-Xprint:typer"])
     """
     if PROJECT is None:
         return "Error: No Dotty project root specified. Use --root argument."
@@ -273,7 +282,7 @@ def scalac(file: str, options: List[str] = None) -> str:
     if options is None:
         options = []
 
-    return PROJECT.scalac(file, options)
+    return PROJECT.scalac(files, options)
 
 
 @mcp.tool()
