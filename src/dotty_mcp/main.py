@@ -9,7 +9,7 @@ from pathlib import Path
 from typing import List, Optional
 
 import pexpect
-from mcp.server.fastmcp import FastMCP
+from mcp.server.mcpserver import MCPServer
 
 
 class SBTProcess:
@@ -245,11 +245,11 @@ PROJECT: Optional[DottyProject] = None
 
 
 # Initialize the MCP server
-mcp = FastMCP("dotty-mcp")
+mcp = MCPServer("dotty-mcp")
 
 
 @mcp.tool()
-def scalac(files: List[str], options: List[str] = None) -> str:
+def scalac(files: List[str], options: Optional[List[str]] = None) -> str:
     """
     Compile one or more Scala files using the Dotty (Scala 3) compiler under development through SBT.
 
